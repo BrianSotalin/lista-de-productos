@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "mi-nueva-app",
+    "slug": "mi-nueva-app",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  },
+  "name": "mi-nueva-app"
+}
