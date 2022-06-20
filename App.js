@@ -56,7 +56,7 @@ let guardarProducto =()=>{
     if(validacion()){
       Alert.alert('INFO','El producto ya existe')
     }else{
-      let producto={codigo:txtCodigo,nombre:txtProducto,categoria:txtCategoria,venta:txtVenta};
+      let producto={codigo:txtCodigo,nombre:txtProducto,categoria:txtCategoria,precio:txtPrecio,venta:txtVenta};
       productos.push(producto);
     }
   }else{
