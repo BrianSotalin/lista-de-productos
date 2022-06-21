@@ -1,4 +1,4 @@
-import { View, Text,FlatList,SafeAreaView ,StyleSheet,TextInput,Alert, ScrollView} from 'react-native'
+import { View, Text,FlatList,SafeAreaView ,StyleSheet,TextInput,Alert, ScrollView,TouchableOpacity,Modal,Pressable} from 'react-native'
 import { Button } from 'react-native'
 import React, { useState } from 'react'
 //import HomeScreen,{productos} from './src/screens/HomeScreen'
@@ -26,6 +26,7 @@ let editor=false;
 let indiceMof=-1;
 
 const App = () => {
+const [modalVisible, setModalVisible] = useState(false);
 const [txtCodigo,setTxtCodigo]=useState();
 const [txtProducto,setTxtProducto]=useState();
 const [txtCategoria,setTxtCategoria]=useState();
@@ -52,64 +53,114 @@ return true
 }
 //registro
 let guardarProducto =()=>{
-  if(newComponent){
-    if(validacion()){
-      Alert.alert('INFO','El producto ya existe')
+  
+    if(newComponent){
+      if(validacion()){
+        Alert.alert('INFO','El producto ya existe')
+      }else{
+        if(txtCodigo==null || txtCategoria==null || txtProducto==null || txtVenta==null){
+          Alert.alert('INFO','Llene todos los campos')
+        }else{
+          let producto={codigo:txtCodigo,nombre:txtProducto,categoria:txtCategoria,precio:txtPrecio,venta:txtVenta};
+          productos.push(producto);
+        }
+         
+      }
     }else{
-      let producto={codigo:txtCodigo,nombre:txtProducto,categoria:txtCategoria,precio:txtPrecio,venta:txtVenta};
-      productos.push(producto);
+      productos[indiceMof].nombre=txtCodigo;
+      productos[indiceMof].nombre=txtProducto;
+      productos[indiceMof].categoria=txtCategoria;
+      productos[indiceMof].precio=txtPrecio;
+      productos[indiceMof].venta=txtVenta;
     }
-  }else{
-    productos[indiceMof].nombre=txtCodigo;
-    productos[indiceMof].nombre=txtProducto;
-    productos[indiceMof].categoria=txtCategoria;
-    productos[indiceMof].precio=txtPrecio;
-    productos[indiceMof].venta=txtVenta;
-  }
-
+  
   clean();
   setCantidad(productos.length)
 }
 
 
-let ItemPersona =(props)=>{
+let ItemProducto =({indice,producto})=>{
   return (
   <SafeAreaView style={styles.etiqueta}>
           <View style={styles.etiquetaIndex}>
           
-            <Text style={{color:'#DEFFEF', fontSize:16}}>   {props.producto.codigo } </Text>
+            <Text style={{color:'#DEFFEF', fontSize:16}}>   {producto.codigo } </Text>
           </View>
           <View style={styles.etiquetaContenido}>
           <Text style={{color:'#DEFFEF',fontSize:20}}>
-          {props.producto.nombre} 
+          {producto.nombre} 
             </Text>
             <Text style={{color:'#D47C35',justifyContent:'space-between'}}>Categoria: 
-        <Text style={{color:'#DEFFEF'}}> {props.producto.categoria}</Text> 
+        <Text style={{color:'#DEFFEF'}}> {producto.categoria}</Text> 
         </Text>
-        <Text style={{fontWeight:'bold',fontSize:15,color:'#FFF318'}}> {props.producto.venta}$ </Text> 
+        <Text style={{fontWeight:'bold',fontSize:15,color:'#FFF318'}}> {producto.venta}$ </Text> 
           </View >
            <View style={styles.itemBotones}>
-            <Button title='/' color={'orange'} 
-            onPress={()=>{
-              setTxtCodigo(props.producto.codigo);
-              setTxtProducto(props.producto.nombre);
-              setTxtCategoria(props.producto.categoria);
-              setTxtPrecio(props.producto.precio);
-              setTxtVenta(props.producto.venta);
-              newComponent=false;
-              indiceMof=props.indice;
-                }}
-              />
-            <Button title='X' color='crimson'
-            onPress={()=>{
-              indiceMof=props.indice;
-              productos.splice(indiceMof,1);
-              console.log("Productos",productos);
-              setCantidad(productos.length);
-            }}
-            />
-          
+
+              <TouchableOpacity
+              style={styles.buttonEditar}
+               onPress={()=>{
+                setTxtCodigo(producto.codigo);
+                setTxtProducto(producto.nombre);
+                setTxtCategoria(producto.categoria);
+                setTxtPrecio(producto.precio);
+                setTxtVenta(producto.venta);
+                newComponent=false;
+                indiceMof=indice;
+                  }}
+              >
+                <Text style={{color:'white',fontWeight:'bold'}}>/</Text>
+              </TouchableOpacity>
+            
+          <View >
+          <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          Alert.alert("Modal has been closed.");
+          setModalVisible(!modalVisible);
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>¿Esta seguro de eliminar el producto?</Text>
+           
+           <View style={styles.areaBotones}>
+           <Pressable
+              style={styles.buttonSi}
+              onPress={()=>{
+                indiceMof=indice;
+                productos.splice(indiceMof,1);
+                console.log("Productos",productos);
+                setCantidad(productos.length);
+                setModalVisible(!modalVisible)
+              }}
+            >
+              <Text style={styles.textStyle}>Si</Text>
+              
+            </Pressable>
+            <Pressable
+              style={styles.buttonNo}
+              onPress={() => setModalVisible(!modalVisible)}
+            >
+              <Text style={styles.textStyle}>No</Text>
+            </Pressable>
+            </View>
+           
+
+          </View>
+        </View>
+      </Modal>
+      <Pressable
+        style={[styles.buttonDelete, styles.buttonOpen]}
+        onPress={() => setModalVisible(true)}
+      >
+        <Text style={{color:'white',fontWeight:'bold'}} >X</Text>
+      </Pressable>
+          </View>
            </View>
+
         </SafeAreaView>
   );}
 
@@ -164,7 +215,7 @@ let ItemPersona =(props)=>{
       editable={editor}
       /> 
       <View style={styles.areaBotones}>
-        <Button title='Guardar' onPress={()=> {guardarProducto()}} color={'#A691FF'}/>
+        <Button title='Guardar' onPress={()=> {guardarProducto()}} color={'#A691FF'} />
         <Button title='Nuevo' onPress={()=>{clean()}} color={'#045859'} />
       </View>
       </View>
@@ -173,13 +224,8 @@ let ItemPersona =(props)=>{
    <View style={styles.flexb2}>
    <FlatList
      data = {productos}
-     renderItem= {(elementos) => {
-        return <ItemPersona indice={elementos.index} producto={elementos.item}/>;
-       
-    }}
-    keyExtractor={(item)=>{
-        return item.codigo
-    }}
+     renderItem= {({index,item}) => <ItemProducto indice={index} producto={item}/>}
+    keyExtractor={item=> item.codigo}
      />
      <View style={{flexDirection:'row',justifyContent:'space-between'}}>
       <Text>Braian Sotalin Pillajo</Text>
@@ -251,10 +297,70 @@ borderColor:'#1AE8A0',
   flex:6
   },
   itemBotones:{
-    flex:2,
+    flex:3,
     flexDirection:'row',
     justifyContent:'space-evenly',
     alignItems:'center',
+  },
+  buttonEditar:{
+    alignItems: "center",
+    backgroundColor: "#006969",
+    marginRight:10,
+    padding: 20,
+    borderRadius: 20,
+  },
+  buttonDelete:{
+    alignItems: "center",
+    backgroundColor: "crimson",
+    marginRight:10,
+    padding: 20,
+    borderRadius: 20,
+  },
+  buttonSi:{
+    alignItems: "center",
+    backgroundColor: "#07E03A",
+    padding: 0,
+    marginRight:20,
+    borderRadius: 20,
+  },
+  buttonNo:{
+    alignItems: "center",
+    backgroundColor: "crimson",
+    padding: 0,
+    marginLeft:20,
+    borderRadius: 20,
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5
+  },
+
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
+    margin:20
+  },
+  modalText: {
+    marginBottom: 15,
+    flexDirection:'row',
   }
 })
 
